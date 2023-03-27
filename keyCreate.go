@@ -48,6 +48,9 @@ func main() {
 	fmt.Println("Type:", reflect.TypeOf(handle).String())
 	fmt.Println("Type:", reflect.TypeOf(k).String())
 
+	// This is a test thing from the TPMcourse..
+	// This bit only works if you've run the createkeys.sh in the keys folder,
+	// which creates the handle at 0x81010003. Otherwise it'll give a nil
 	// quote retuns 3 values,  att, sig, err
 	att, sig, err := tpm2.Quote(
 		rwc,
@@ -76,7 +79,7 @@ func main() {
 	fmt.Println("Att [% x] ", att)
 	fmt.Println("Sig  ", sig)
 
-	// creates handle 0x81010001
+	// Endorsementkey method creates handle at 0x81010001
 	ekkey, err := client.EndorsementKeyRSA(rwc)
 	fmt.Println("EK key (??) : ", ekkey)
 	//fmt.Println("EK public key: ", ekkey.PublicKey())
@@ -87,7 +90,7 @@ func main() {
 	//fmt.Println("EK public area key: ", ee)
 	//fmt.Println("EK public area name: ", en)
 
-	// creates handle 0x81008F01
+	// Attstionkey creates handle at 0x81008F01
 	akkey, err := client.AttestationKeyRSA(rwc)
 	//fmt.Println("AK key (??) : ", akkey)
 	//fmt.Println("AK public key : ", akkey.PublicKey())
@@ -101,6 +104,8 @@ func main() {
 		fmt.Println("ek kssey ?: ", keey)
 		fmt.Println("ek kssey ?: ", keey.PublicKey())
 	*/
+
+	// Newkey method does not persist the handle
 	anotherkey, err := client.NewKey(rwc, tpm2.HandleEndorsement, client.AKTemplateRSA())
 	if err != nil {
 		fmt.Println("can't create SRK %q: %v", tpmPath, err)
@@ -153,6 +158,7 @@ func main() {
 	}
 	log.Printf("Public Key written to: %s", *publicKeyFile)
 
+	// this bit converts the key into JWK format for some reason??
 	der, err := x509.MarshalPKIXPublicKey(ap)
 	if err != nil {
 		log.Fatalf("keycreate: error converting public key: %v", err)
