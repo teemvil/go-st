@@ -11,6 +11,7 @@ import (
 
 func main() {
 
+	//Set the content for jwt-token
 	claims := jwt.MapClaims{
 		"subject": "test",
 		"name":    "name",
@@ -35,6 +36,7 @@ func main() {
 		os.Exit(1)
 	}
 
+	//publish token over mqtt
 	mqttToken := client.Publish("test-channel", 0, false, signedToken)
 	mqttToken.Wait()
 
