@@ -53,6 +53,7 @@ func main() {
 		fmt.Errorf("Reading handle failed: %s", err)
 	}
 
+	//make public key into into pem format
 	ap, err := kPublicKey.Key()
 	if err != nil {
 		fmt.Errorf("reading Key() failed: %s", err)
@@ -61,8 +62,6 @@ func main() {
 	if err != nil {
 		fmt.Errorf("Unable to convert ekpub: %v", err)
 	}
-
-	//make public key into into pem format
 	rakPubPEM := pem.EncodeToMemory(
 		&pem.Block{
 			Type:  "PUBLIC KEY",
@@ -71,8 +70,9 @@ func main() {
 	)
 	fmt.Printf("     PublicKey: \n%v", string(rakPubPEM))
 
+	//set up the jwt token
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
+	//and sign with the pem formatted public key
 	signedToken, err := jwtToken.SignedString(rakPubPEM)
 	if err != nil {
 		fmt.Println("error: ", err)
