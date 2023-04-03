@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	//"os"
+	"crypto/x509"
+	"encoding/pem"
 	"io/ioutil"
 
 	//MQTT "github.com/eclipse/paho.mqtt.golang"
@@ -29,10 +31,14 @@ func main() {
 	}
 	defer rwc.Close()
 
+	//there's a EK key at 0x81010002
+	var handleEk = tpmutil.Handle(0x81010002)
+	fmt.Println("handle: ", handleEk)
 	//there's a AK key at 0x81010003
-	var handle = tpmutil.Handle(0x81010003)
-	fmt.Println("handle: ", handle)
+	var handleAk = tpmutil.Handle(0x81010003)
+	fmt.Println("handle: ", handleAk)
 
+	//testing with pem reading
 	pubKey, err := ioutil.ReadFile("keys/ak2.pem")
 	fmt.Println("pub ak key : \n", pubKey)
 	ss := string(pubKey)
@@ -41,15 +47,40 @@ func main() {
 	srs := []byte(ss)
 	fmt.Println("byte string : ", srs)
 
+	//read public key directly from handle
+	kPublicKey, _, _, err := tpm2.ReadPublic(rwc, handleAk)
+	if err != nil {
+		fmt.Errorf("Reading handle failed: %s", err)
+	}
+
+	ap, err := kPublicKey.Key()
+	if err != nil {
+		fmt.Errorf("reading Key() failed: %s", err)
+	}
+	akBytes, err := x509.MarshalPKIXPublicKey(ap)
+	if err != nil {
+		fmt.Errorf("Unable to convert ekpub: %v", err)
+	}
+
+	//make public key into into pem format
+	rakPubPEM := pem.EncodeToMemory(
+		&pem.Block{
+			Type:  "PUBLIC KEY",
+			Bytes: akBytes,
+		},
+	)
+	fmt.Printf("     PublicKey: \n%v", string(rakPubPEM))
+
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	signedToken, err := jwtToken.SignedString(pubKey)
+	signedToken, err := jwtToken.SignedString(rakPubPEM)
 	if err != nil {
 		fmt.Println("error: ", err)
 	}
 
 	fmt.Println("signed token: ", signedToken)
 
+	//confirm public key manually
 	pKeyFromAtt := []byte("-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA88rw9mMriuKHvJ/OE2Bu\noMgrTQ7YyvZi8BOVD2k9cVWaCmYZ/I2nSveMUJuBFyWLMeHgvd97DOpbcxmMtQIj\nDzwjQyueKHuupw4fqXhZ5e2ZDg9ul4aw+yqjBFibZKn5WdD1+zdQpyicWPHe86Z8\n0B0/xs5apHuHtc6IYaHiT/CDs4RkJ2Y3iZPrdnKWGXjHIGUpTYquBQvAQmr8VUvZ\nnZUPAXTAflnziA+31tHUlKICcJXsU6DjacJohI/DbDMKX0zA1UxJwLzD2iXkbZlu\n81cjWBWbZFjZuaT1xEpcj4+gszE8s5iTqh/3jZOCiLFWJzv0V8ikIiP37ASennPB\nawIDAQAB\n-----END PUBLIC KEY-----\n")
 
 	parsedToken, err := jwt.Parse(signedToken, func(parsedToken *jwt.Token) (interface{}, error) {
