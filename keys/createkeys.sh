@@ -14,5 +14,6 @@ tpm2_createek -c 0x81010002 -G rsa -u ek.pub
 tpm2_readpublic -c 0x81010002 -o ek.pem -f pem
  
 echo "creating ak key"
-tpm2_createak -C 0x81010002 -c ak.ctx -G rsa -g sha256 -s rsassa -u ak.pub -f pem -n ak.pem
+tpm2_createak -C 0x81010002 -c ak.ctx -G rsa -g sha256 -s rsassa -u ak.pub -f pem -n ak.name
 tpm2_evictcontrol -c ak.ctx 0x81010003
+tpm2_readpublic -c 0x81010003 -o ak.pem -f pem
