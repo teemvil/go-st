@@ -23,13 +23,13 @@ func getPubKey(handleaddr int) ([]byte, error) {
 	}
 	defer rwc.Close()
 
-	var handlead = 0
+	var handleint = 0
 	if handleaddr == 0 {
-		handlead = 0x81010003
+		handleint = 0x81010003
 	} else {
-		handlead = handleaddr
+		handleint = handleaddr
 	}
-	var handle = tpmutil.Handle(handlead)
+	var handle = tpmutil.Handle(handleint)
 	fmt.Println("handle: ", handle)
 	//there's a EK key at 0x81010002
 	//var handleEk = tpmutil.Handle(0x81010002)
@@ -39,7 +39,7 @@ func getPubKey(handleaddr int) ([]byte, error) {
 	fmt.Println("handle: ", handleAk)
 
 	//read public key directly from handle
-	kPublicKey, _, _, err := tpm2.ReadPublic(rwc, handleAk)
+	kPublicKey, _, _, err := tpm2.ReadPublic(rwc, handle)
 	if err != nil {
 		fmt.Errorf("Reading handle failed: %s", err)
 	}
