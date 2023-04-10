@@ -4,7 +4,6 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	//"github.com/google/go-tpm-tools/client"
@@ -16,7 +15,7 @@ import (
 	jwt "github.com/golang-jwt/jwt"
 )
 
-func getPubKey() ([]byte, error) {
+func getPubKey(handleaddr int) ([]byte, error) {
 	//open TPM2 connection
 	rwc, err := tpm2.OpenTPM("/dev/tpm0")
 	if err != nil {
@@ -24,21 +23,20 @@ func getPubKey() ([]byte, error) {
 	}
 	defer rwc.Close()
 
+	var handlead = 0
+	if handleaddr == 0 {
+		handlead = 0x81010003
+	} else {
+		handlead = handleaddr
+	}
+	var handle = tpmutil.Handle(handlead)
+	fmt.Println("handle: ", handle)
 	//there's a EK key at 0x81010002
-	var handleEk = tpmutil.Handle(0x81010002)
-	fmt.Println("handle: ", handleEk)
+	//var handleEk = tpmutil.Handle(0x81010002)
+	//fmt.Println("handle: ", handleEk)
 	//there's a AK key at 0x81010003
 	var handleAk = tpmutil.Handle(0x81010003)
 	fmt.Println("handle: ", handleAk)
-
-	//testing with pem reading
-	pubKey, err := ioutil.ReadFile("keys/ak2.pem")
-	fmt.Println("pub ak key : \n", pubKey)
-	ss := string(pubKey)
-	fmt.Println("key string : ", ss)
-	//secret := []byte(pubKey)
-	srs := []byte(ss)
-	fmt.Println("byte string : ", srs)
 
 	//read public key directly from handle
 	kPublicKey, _, _, err := tpm2.ReadPublic(rwc, handleAk)
@@ -74,7 +72,8 @@ func main() {
 		"another": "thing",
 	}
 
-	var secret, err = getPubKey()
+	//give the key address memory position the default 0 gives key in 0x81010003
+	var secret, err = getPubKey(0)
 	if err != nil {
 		fmt.Println("error: ", err)
 	}
