@@ -102,11 +102,11 @@ func main() {
 
 	//publish hello-message over mqtt
 	type Message struct {
-		name     string
-		itemid   string
-		messsage string
-		time     int64
-		jwt      string
+		Name     string `json: "name"`
+		Itemid   string `json: "itemid"`
+		Messsage string `json: "message"`
+		Time     int64  `json: "time"`
+		Jwt      string `json: "jwt"`
 	}
 	var mes = Message{"pi14", "43948asrerSAA30823", "Hello, pi014 here", 32323, signedToken}
 	jsonmes, err := json.Marshal(mes)

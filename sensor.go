@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"time"
 
 	//"github.com/google/go-tpm-tools/client"
 	//"github.com/google/go-tpm/tpm2"
@@ -30,16 +31,25 @@ func main() {
 
 	//publish token over mqtt
 	type Message struct {
-		name       string
-		hostDevice string
-		messsage   string
-		time       int64
-		channel    string
+		Name       string `json: "name"`
+		HostDevice string `json: "hostDevice"`
+		Messsage   string `json: "message"`
+		Time       int64  `json: "time"`
+		Channel    string `json: "channel"`
 	}
 	var mes = Message{"Temperature sensor", "pi014", "Hello, Temperature sensor here", 32323, "temp1"}
 	jsonmes, err := json.Marshal(mes)
 
-	mqttToken := client.Publish("sensor-channel", 0, false, jsonmes)
+	mqttToken := client.Publish("hello-channel", 0, false, jsonmes)
 	mqttToken.Wait()
+
+	//start broadcasting in a loop
+	for {
+		sensorValue := 0 //TODO: get value from sensor
+		secondMqttToken := client.Publish(mes.Channel, 0, false, sensorValue)
+		secondMqttTtoken.Wait()
+		fmt.Printf("Published message: %s\n", text)
+		time.Sleep(1 * time.Second)
+	}
 
 }

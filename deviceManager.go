@@ -21,11 +21,11 @@ func main(){
 	secret := []byte("-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA88rw9mMriuKHvJ/OE2Bu\noMgrTQ7YyvZi8BOVD2k9cVWaCmYZ/I2nSveMUJuBFyWLMeHgvd97DOpbcxmMtQIj\nDzwjQyueKHuupw4fqXhZ5e2ZDg9ul4aw+yqjBFibZKn5WdD1+zdQpyicWPHe86Z8\n0B0/xs5apHuHtc6IYaHiT/CDs4RkJ2Y3iZPrdnKWGXjHIGUpTYquBQvAQmr8VUvZ\nnZUPAXTAflnziA+31tHUlKICcJXsU6DjacJohI/DbDMKX0zA1UxJwLzD2iXkbZlu\n81cjWBWbZFjZuaT1xEpcj4+gszE8s5iTqh/3jZOCiLFWJzv0V8ikIiP37ASennPB\nawIDAQAB\n-----END PUBLIC KEY-----\n")
 
 	type Message struct {
-		name string
-		itemid string
-		messsage string
-		time int64
-		jwt string
+		Name     string `json: "name"`
+		Itemid   string `json: "itemid"`
+		Messsage string `json: "message"`
+		Time     int64 `json: "time"`
+		Jwt      string `json: "jwt"`
 	}
 	var mes Message 
 
@@ -40,10 +40,13 @@ func main(){
 		fmt.Println("Received message on topic: ", msg.Topic())
 		fmt.Println("Received message: ", msg.Payload())
 
-		err := json.Unmarshal(msg.Payload(), &mes)
+		jsonerr := json.Unmarshal(msg.Payload(), &mes)
+		if jsonerr != nil {
+			fmt.Println("JSON Error: ", jsonerr)
+		}
 
-		text := string(mes.jwt)
-		parsedToken, err := jwt.Parse(text, func(parsedToken *jwt.Token)(interface{}, error){
+		messageJwt := string(mes.Jwt)
+		parsedToken, err := jwt.Parse(messageJwt, func(parsedToken *jwt.Token)(interface{}, error){
 			return secret, nil
 		})
 
