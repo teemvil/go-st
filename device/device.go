@@ -101,14 +101,32 @@ func main() {
 	}
 
 	//publish hello-message over mqtt
-	type Message struct {
+	type DeviceMessage struct {
 		Name     string `json: "name"`
 		Itemid   string `json: "itemid"`
 		Messsage string `json: "message"`
 		Time     int64  `json: "time"`
 		Jwt      string `json: "jwt"`
 	}
-	var mes = Message{"pi14", "43948asrerSAA30823", "Hello, pi014 here", 32323, signedToken}
+
+	//get config info from file
+	type DeviceFile struct {
+		Name   string `json: "name"`
+		Itemid string `json: "itemid"`
+	}
+
+	var info DeviceFile
+	conf, err := os.ReadFile("device_config.json")
+	if err != nil {
+		fmt.Println("error: ", err)
+	}
+
+	err2 := json.Unmarshal(conf, &info)
+	if err2 != nil {
+		fmt.Println(err2)
+	}
+
+	var mes = DeviceMessage{info.Name, info.Itemid, "Hello, pi014 here", 32323, signedToken}
 	jsonmes, err := json.Marshal(mes)
 
 	mqttToken := client.Publish("test-channel", 0, false, jsonmes)

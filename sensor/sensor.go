@@ -30,14 +30,33 @@ func main() {
 	}
 
 	//publish token over mqtt
-	type Message struct {
+	type SensorMessage struct {
 		Name       string `json: "name"`
 		HostDevice string `json: "hostDevice"`
 		Messsage   string `json: "message"`
 		Time       int64  `json: "time"`
 		Channel    string `json: "channel"`
 	}
-	var mes = Message{"Temperature sensor", "pi014", "Hello, Temperature sensor here", 32323, "temp1"}
+
+	//get config info from file
+	type SensorFile struct {
+		Name        string `json: "name"`
+		HostDevice  string `json: "host-device"`
+		MQTTchannel string `json: "mqtt-channel"`
+	}
+
+	var info SensorFile
+	conf, err := os.ReadFile("device_config.json")
+	if err != nil {
+		fmt.Println("error: ", err)
+	}
+
+	err2 := json.Unmarshal(conf, &info)
+	if err2 != nil {
+		fmt.Println(err2)
+	}
+
+	var mes = SensorMessage{info.Name, info.HostDevice, "Hello, Temperature sensor here", 32323, info.MQTTchannel}
 	jsonmes, err := json.Marshal(mes)
 
 	mqttToken := client.Publish("hello-channel", 0, false, jsonmes)
@@ -47,8 +66,8 @@ func main() {
 	for {
 		sensorValue := 0 //TODO: get value from sensor
 		secondMqttToken := client.Publish(mes.Channel, 0, false, sensorValue)
-		secondMqttTtoken.Wait()
-		fmt.Printf("Published message: %s\n", text)
+		secondMqttToken.Wait()
+		fmt.Printf("Published message: %s\n", sensorValue)
 		time.Sleep(1 * time.Second)
 	}
 
