@@ -20,14 +20,14 @@ func main(){
 	
 	secret := []byte("-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA88rw9mMriuKHvJ/OE2Bu\noMgrTQ7YyvZi8BOVD2k9cVWaCmYZ/I2nSveMUJuBFyWLMeHgvd97DOpbcxmMtQIj\nDzwjQyueKHuupw4fqXhZ5e2ZDg9ul4aw+yqjBFibZKn5WdD1+zdQpyicWPHe86Z8\n0B0/xs5apHuHtc6IYaHiT/CDs4RkJ2Y3iZPrdnKWGXjHIGUpTYquBQvAQmr8VUvZ\nnZUPAXTAflnziA+31tHUlKICcJXsU6DjacJohI/DbDMKX0zA1UxJwLzD2iXkbZlu\n81cjWBWbZFjZuaT1xEpcj4+gszE8s5iTqh/3jZOCiLFWJzv0V8ikIiP37ASennPB\nawIDAQAB\n-----END PUBLIC KEY-----\n")
 
-	type Message struct {
+	type DeviceMessage struct {
 		Name     string `json: "name"`
 		Itemid   string `json: "itemid"`
 		Messsage string `json: "message"`
 		Time     int64 `json: "time"`
 		Jwt      string `json: "jwt"`
 	}
-	var mes Message 
+	var mes DeviceMessage 
 
 	client := MQTT.NewClient(opts)
 	
@@ -54,10 +54,12 @@ func main(){
 			fmt.Println("Error: ", err)
 		}
 		if claims, ok := parsedToken.Claims.(jwt.MapClaims); ok && parsedToken.Valid {
-			fmt.Println("Decoded JWT claims:")
+			//TODO: handle incoming messages
+
+			/*fmt.Println("Decoded JWT claims:")
 			fmt.Println("Subject: ", claims["subject"])
 			fmt.Println("Name: ", claims["name"])
-			fmt.Println("Another: ", claims["another"])
+			fmt.Println("Another: ", claims["another"])*/
 		} else {
 			fmt.Println("JWT Token is not valid")
 		}
