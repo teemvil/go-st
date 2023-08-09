@@ -110,7 +110,7 @@ func main() {
 		Time          time.Time `json: "time"`
 		Jwt           string    `json: "jwt"`
 		HostDevice    string    `json: "hostDevice"`
-		SensorChannel string    `json: "channel"`
+		SensorChannel string    `json: "sensorChannel"`
 	}
 
 	//get config info from file

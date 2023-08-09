@@ -26,7 +26,7 @@ func main(){
 		Time     time.Time `json: "time"`
 		Jwt      string `json: "jwt"`
 		HostDevice string `json: "hostDevice"`
-		SensorChannel    string `json: "channel"`
+		SensorChannel    string `json: "sensorChannel"`
 	}
 	var mes ManagementMessage 
 
@@ -68,8 +68,6 @@ func main(){
 			fmt.Println("Error parsing jwt: ", err)
 		}
 		if claims, ok := parsedToken.Claims.(jwt.MapClaims); ok && parsedToken.Valid {
-			//TODO: send message that device validated
-
 			fmt.Println("JWT is valid")
 
 			validationMes = ManagementMessage{mes.Name, "null","Validation ok for "+mes.Name, "validation-ok", time.Now(), "null", "null", "null"}
