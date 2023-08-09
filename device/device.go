@@ -6,6 +6,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	"os"
+	"time"
 
 	//"github.com/google/go-tpm-tools/client"
 	"github.com/google/go-tpm/tpm2"
@@ -101,12 +102,15 @@ func main() {
 	}
 
 	//publish hello-message over mqtt
-	type DeviceMessage struct {
-		Name     string `json: "name"`
-		Itemid   string `json: "itemid"`
-		Messsage string `json: "message"`
-		Time     int64  `json: "time"`
-		Jwt      string `json: "jwt"`
+	type ManagementMessage struct {
+		Name          string    `json: "name"`
+		Itemid        string    `json: "itemid"`
+		Messsage      string    `json: "message"`
+		Event         string    `json: "event"`
+		Time          time.Time `json: "time"`
+		Jwt           string    `json: "jwt"`
+		HostDevice    string    `json: "hostDevice"`
+		SensorChannel string    `json: "channel"`
 	}
 
 	//get config info from file
@@ -126,10 +130,10 @@ func main() {
 		fmt.Println(err2)
 	}
 
-	var mes = DeviceMessage{info.Name, info.Itemid, "Hello, pi014 here", 32323, signedToken}
+	var mes = ManagementMessage{info.Name, info.Itemid, "Hello, pi014 here", "device-startup", time.Now(), signedToken, "null", "null"}
 	jsonmes, err := json.Marshal(mes)
 
-	mqttToken := client.Publish("test-channel", 0, false, jsonmes)
+	mqttToken := client.Publish("management", 0, false, jsonmes)
 	mqttToken.Wait()
 
 }

@@ -5,6 +5,7 @@ import (
 
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"os"
 	"time"
 
@@ -30,12 +31,15 @@ func main() {
 	}
 
 	//publish token over mqtt
-	type SensorMessage struct {
-		Name       string `json: "name"`
-		HostDevice string `json: "hostDevice"`
-		Messsage   string `json: "message"`
-		Time       int64  `json: "time"`
-		Channel    string `json: "channel"`
+	type ManagementMessage struct {
+		Name          string    `json: "name"`
+		Itemid        string    `json: "itemid"`
+		Messsage      string    `json: "message"`
+		Event         string    `json: "event"`
+		Time          time.Time `json: "time"`
+		Jwt           string    `json: "jwt"`
+		HostDevice    string    `json: "hostDevice"`
+		SensorChannel string    `json: "channel"`
 	}
 
 	//get config info from file
@@ -56,15 +60,15 @@ func main() {
 		fmt.Println(err2)
 	}
 
-	var mes = SensorMessage{info.Name, info.HostDevice, "Hello, Temperature sensor here", 32323, info.MQTTchannel}
+	var mes = ManagementMessage{info.Name, "null", "Hello, Temperature sensor here", "sensor-startup", time.Now(), "null", info.HostDevice, info.MQTTchannel}
 	jsonmes, err := json.Marshal(mes)
 
-	mqttToken := client.Publish("hello-channel", 0, false, jsonmes)
+	mqttToken := client.Publish("Management", 0, false, jsonmes)
 	mqttToken.Wait()
 
 	//start broadcasting in a loop
 	for {
-		sensorValue := 0 //TODO: get value from sensor
+		sensorValue := rand.Intn(100) //random number for now
 		secondMqttToken := client.Publish(mes.Channel, 0, false, sensorValue)
 		secondMqttToken.Wait()
 		fmt.Printf("Published message: %s\n", sensorValue)
