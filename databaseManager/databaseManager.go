@@ -51,17 +51,27 @@ func main(){
 		fmt.Println("Received message: ", msg.Payload())
 
 		err := json.Unmarshal(msg.Payload(), &mes)
+		if err != nil{
+			fmt.Println(err)
+		}
 
 		//add new sensors to the list
 		if (string(mes.Event)="sensor-startup"){
 			sensor = Sensor(mes.Name, mes.HostDevice, mes.SensorChannel)
 			sensors = append(sensors, sensor)
 			fmt.Println("sensor "+mes.Name+" added to the list")
+			//Check if hostdevice is deemed safe
 			n := 0
 			for n < len(devices) {
 				fmt.Println(devices[n])
 				if (mes.Name = devices[n]){
 					//TODO: start recording sensor data from sensor's channel
+					// RAther: send message to databaseSaver.go to start saving
+					savemessage = ManagementMessage(mes.Name, "null", "Start saving from channel "+mes.SensorChannel, "save", time.Now(), "null", mes.HostDevice, mes.SensorChannel)
+					jsonmes, err := json.Marshal(savemessage)
+
+					sToken := client.Publish("management", 0, false, jsonmes)
+					sToken.Wait()
 
 					n=len(devices)-1 //kludge for ending the loop
 				}
@@ -73,15 +83,18 @@ func main(){
 		if (string(mes.Event)="validation-ok"){
 			devices = append(devices, mes.Name)
 			fmt.Println("device "+mes.Name+" added to the list")
+			//check if there are sensors on the device
 			n := 0
 			for n < len(sensors) {
 				fmt.Println(sensors[n])
 				if (mes.Name = sensors[n].hostdevice){
 					//TODO: start recording sensor data from sensor's channel
+					// RAther: send message to databaseSaver.go to start saving
+					savemessage = ManagementMessage(sensors[n].name, "null", "Start saving from channel "+sensors[n].channel, "save", time.Now(), "null", sensors[n].hostdevice, sensors[n].channel)
+					jsonmes, err := json.Marshal(savemessage)
 
-					subscribeToTopic(client, sensors[n].channel) //??
-
-					n=len(sensors)-1 //kludge for ending the loop
+					sToken := client.Publish("management", 0, false, jsonmes)
+					sToken.Wait()
 				}
 				n = n+1
 			}
@@ -99,19 +112,3 @@ func main(){
 
 }
 
-
-
-func subscribeToTopic(client MQTT.Client, topic string) {
-	token := client.Subscribe(topic, 0, messageHandler)
-	token.Wait()
-	if token.Error() != nil {
-		fmt.Printf("Failed to subscribe to topic %s: %s\n", topic, token.Error())
-	} else {
-		fmt.Printf("Subscribed to topic: %s\n", topic)
-	}
-}
-
-func messageHandler(client MQTT.Client, msg MQTT.Message) {
-	fmt.Printf("Received message on topic: %s\n", msg.Topic())
-	fmt.Printf("Message payload: %s\n", msg.Payload())
-}
