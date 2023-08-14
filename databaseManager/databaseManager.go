@@ -41,12 +41,12 @@ func main(){
 
 	client := MQTT.NewClient(opts)
 	
-	if mqttToken := client.Connect(); mqttToken.wait() && mqttToken.Error() != nil{
+	if mqttToken := client.Connect(); mqttToken.Wait() && mqttToken.Error() != nil{
 		fmt.Println(mqttToken.Error())
 		os.Exit(1)
 	}
 
-	if mqttToken := client.Subscribe("management", 0, func(client MQTT.Client msg MQTT.Message){
+	if mqttToken := client.Subscribe("management", 0, func(client MQTT.Client, msg MQTT.Message){
 		fmt.Println("Received message on topic: ", msg.Topic())
 		fmt.Println("Received message: ", msg.Payload())
 
@@ -56,7 +56,7 @@ func main(){
 		}
 
 		//add new sensors to the list
-		if (string(mes.Event)="sensor-startup"){
+		if (string(mes.Event)=="sensor-startup"){
 			sensor = Sensor(mes.Name, mes.HostDevice, mes.SensorChannel)
 			sensors = append(sensors, sensor)
 			fmt.Println("sensor "+mes.Name+" added to the list")

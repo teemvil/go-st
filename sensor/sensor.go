@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"strconv"
 	"time"
 
 	//"github.com/google/go-tpm-tools/client"
@@ -25,7 +26,7 @@ func main() {
 
 	client := MQTT.NewClient(opts)
 
-	if mqttToken := client.Connect(); mqttToken.wait() && mqttToken.Error() != nil {
+	if mqttToken := client.Connect(); mqttToken.Wait() && mqttToken.Error() != nil {
 		fmt.Println(mqttToken.Error())
 		os.Exit(1)
 	}
@@ -50,7 +51,7 @@ func main() {
 	}
 
 	var info SensorFile
-	conf, err := os.ReadFile("device_config.json")
+	conf, err := os.ReadFile("sensor_config.json")
 	if err != nil {
 		fmt.Println("error: ", err)
 	}
@@ -68,10 +69,11 @@ func main() {
 
 	//start broadcasting in a loop
 	for {
-		sensorValue := rand.Intn(100) //random number for now
-		secondMqttToken := client.Publish(mes.Channel, 0, false, sensorValue)
+		sensorValue := rand.Intn(100)         //random number for now
+		var value = strconv.Itoa(sensorValue) //convert to string
+		secondMqttToken := client.Publish(mes.SensorChannel, 0, false, value)
 		secondMqttToken.Wait()
-		fmt.Printf("Published message: %s\n", sensorValue)
+		fmt.Printf("Published message: %s\n", value)
 		time.Sleep(1 * time.Second)
 	}
 
