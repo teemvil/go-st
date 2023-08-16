@@ -1,5 +1,5 @@
 {
     "name": "temperature sensor",
-    "host-device": "pi014",
-    "mqtt-channel": "temp01"
+    "hostdevice": "pi014",
+    "mqttchannel": "temp01"
 }

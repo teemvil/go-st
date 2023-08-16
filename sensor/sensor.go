@@ -46,8 +46,8 @@ func main() {
 	//get config info from file
 	type SensorFile struct {
 		Name        string `json: "name"`
-		HostDevice  string `json: "host-device"`
-		MQTTchannel string `json: "mqtt-channel"`
+		HostDevice  string `json: "hostdevice"`
+		MQTTchannel string `json: "mqttchannel"`
 	}
 
 	var info SensorFile
