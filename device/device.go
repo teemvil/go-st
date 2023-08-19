@@ -65,6 +65,22 @@ func getPubKey(handleaddr int) ([]byte, error) {
 	return rakPubPEM, err
 }
 
+type ManagementMessage struct {
+	Name          string    `json: "name"`
+	Itemid        string    `json: "itemid"`
+	Messsage      string    `json: "message"`
+	Event         string    `json: "event"`
+	Time          time.Time `json: "time"`
+	Jwt           string    `json: "jwt"`
+	HostDevice    string    `json: "hostDevice"`
+	SensorChannel string    `json: "sensorChannel"`
+}
+
+type DeviceFile struct {
+	Name   string `json: "name"`
+	Itemid string `json: "itemid"`
+}
+
 func main() {
 
 	//Set the content for jwt-token
@@ -102,22 +118,8 @@ func main() {
 	}
 
 	//publish hello-message over mqtt
-	type ManagementMessage struct {
-		Name          string    `json: "name"`
-		Itemid        string    `json: "itemid"`
-		Messsage      string    `json: "message"`
-		Event         string    `json: "event"`
-		Time          time.Time `json: "time"`
-		Jwt           string    `json: "jwt"`
-		HostDevice    string    `json: "hostDevice"`
-		SensorChannel string    `json: "sensorChannel"`
-	}
 
 	//get config info from file
-	type DeviceFile struct {
-		Name   string `json: "name"`
-		Itemid string `json: "itemid"`
-	}
 
 	var info DeviceFile
 	conf, err := os.ReadFile("device_config.json")

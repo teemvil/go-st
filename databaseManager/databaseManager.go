@@ -12,22 +12,24 @@ import (
 	jwt "github.com/golang-jwt/jwt"
 )
 
+
+type ManagementMessage struct {
+	Name     string `json: "name"`
+	Itemid   string `json: "itemid"`
+	Messsage string `json: "message"`
+	Event	 string `json: "event"`
+	Time     time.Time  `json: "time"`
+	Jwt      string `json: "jwt"`
+	HostDevice string `json: "hostDevice"`
+	SensorChannel    string `json: "sensorChannel"`
+}
+
 func main(){
 
 	//MQTT client info
 	opts := MQTT.NewClientOptions()
 	opts.AddBroker("192.168.0.24:1883")
 	
-	type ManagementMessage struct {
-		Name     string `json: "name"`
-		Itemid   string `json: "itemid"`
-		Messsage string `json: "message"`
-		Event	 string `json: "event"`
-		Time     time.Time  `json: "time"`
-		Jwt      string `json: "jwt"`
-		HostDevice string `json: "hostDevice"`
-		SensorChannel    string `json: "sensorChannel"`
-	}
 	var mes ManagementMessage 
 
 	//list of validated devices

@@ -18,6 +18,23 @@ import (
 	//jwt "github.com/golang-jwt/jwt"
 )
 
+type ManagementMessage struct {
+	Name          string    `json: "name"`
+	Itemid        string    `json: "itemid"`
+	Messsage      string    `json: "message"`
+	Event         string    `json: "event"`
+	Time          time.Time `json: "time"`
+	Jwt           string    `json: "jwt"`
+	HostDevice    string    `json: "hostDevice"`
+	SensorChannel string    `json: "sensorChannel"`
+}
+
+type SensorFile struct {
+	Name        string `json: "name"`
+	HostDevice  string `json: "hostdevice"`
+	MQTTchannel string `json: "mqttchannel"`
+}
+
 func main() {
 
 	// set up the mqtt client
@@ -32,23 +49,8 @@ func main() {
 	}
 
 	//publish token over mqtt
-	type ManagementMessage struct {
-		Name          string    `json: "name"`
-		Itemid        string    `json: "itemid"`
-		Messsage      string    `json: "message"`
-		Event         string    `json: "event"`
-		Time          time.Time `json: "time"`
-		Jwt           string    `json: "jwt"`
-		HostDevice    string    `json: "hostDevice"`
-		SensorChannel string    `json: "sensorChannel"`
-	}
 
 	//get config info from file
-	type SensorFile struct {
-		Name        string `json: "name"`
-		HostDevice  string `json: "hostdevice"`
-		MQTTchannel string `json: "mqttchannel"`
-	}
 
 	var info SensorFile
 	conf, err := os.ReadFile("sensor_config.json")

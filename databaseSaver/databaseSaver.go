@@ -12,6 +12,17 @@ import (
 // Channel for receiving messages
 var messageChannel = make(chan string)
 
+type ManagementMessage struct {
+	Name          string    `json: "name"`
+	Itemid        string    `json: "itemid"`
+	Messsage      string    `json: "message"`
+	Event         string    `json: "event"`
+	Time          time.Time `json: "time"`
+	Jwt           string    `json: "jwt"`
+	HostDevice    string    `json: "hostDevice"`
+	SensorChannel string    `json: "sensorChannel"`
+}
+
 func main() {
 	// Set up the MQTT client options
 	opts := MQTT.NewClientOptions()
@@ -25,7 +36,7 @@ func main() {
 	}
 
 	// Channel for receiving messages
-	messageChannel := make(chan string)
+	//messageChannel := make(chan string)
 
 	// Start goroutine to handle messages from the channel
 	go func() {
@@ -61,17 +72,6 @@ func subscribeToTopic(client MQTT.Client, topic string) {
 	} else {
 		fmt.Printf("Subscribed to topic: %s\n", topic)
 	}
-}
-
-type ManagementMessage struct {
-	Name          string    `json: "name"`
-	Itemid        string    `json: "itemid"`
-	Messsage      string    `json: "message"`
-	Event         string    `json: "event"`
-	Time          time.Time `json: "time"`
-	Jwt           string    `json: "jwt"`
-	HostDevice    string    `json: "hostDevice"`
-	SensorChannel string    `json: "sensorChannel"`
 }
 
 var mes ManagementMessage
