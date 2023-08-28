@@ -50,7 +50,7 @@ func main() {
 		//attestation
 		itemid := mes.Itemid
 		//TODO: attestation using itemid, to get secret from attestation database
-		if mes.Event == "attest" {
+		if mes.Event == "attestation-start" {
 			//secret = attest(itemid)
 			fmt.Println(itemid)
 

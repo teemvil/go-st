@@ -56,7 +56,7 @@ func main() {
 			//secret = attest(itemid)
 			fmt.Println(itemid)
 
-			attestationMes := ManagementMessage{mes.Name, "null", "Validation in progress " + mes.Name, "attest", time.Now(), mes.Jwt, "null", "null"}
+			attestationMes := ManagementMessage{mes.Name, "null", "Validation in progress " + mes.Name, "attestation-start", time.Now(), mes.Jwt, "null", "null"}
 			jsonmes, err := json.Marshal(attestationMes)
 			if err != nil {
 				fmt.Println(err)
