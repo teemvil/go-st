@@ -1,8 +1,6 @@
 package main
 
 import (
-	//"crypto/x509"
-
 	"encoding/json"
 	"fmt"
 	"math/rand"
@@ -10,12 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	//"github.com/google/go-tpm-tools/client"
-	//"github.com/google/go-tpm/tpm2"
-	//"github.com/google/go-tpm/tpmutil"
-
 	MQTT "github.com/eclipse/paho.mqtt.golang"
-	//jwt "github.com/golang-jwt/jwt"
 )
 
 type ManagementMessage struct {
@@ -39,7 +32,8 @@ func main() {
 
 	// set up the mqtt client
 	opts := MQTT.NewClientOptions()
-	opts.AddBroker("192.168.0.24:1883")
+	//opts.AddBroker("192.168.0.24:1883")
+	opts.AddBroker("test.mosquitto.org:1883")
 
 	client := MQTT.NewClient(opts)
 
@@ -51,7 +45,6 @@ func main() {
 	//publish token over mqtt
 
 	//get config info from file
-
 	var info SensorFile
 	conf, err := os.ReadFile("sensor_config.json")
 	if err != nil {
@@ -66,7 +59,7 @@ func main() {
 	var mes = ManagementMessage{info.Name, "null", "Hello, Temperature sensor here", "sensor-startup", time.Now(), "null", info.HostDevice, info.MQTTchannel}
 	jsonmes, err := json.Marshal(mes)
 
-	mqttToken := client.Publish("Management", 0, false, jsonmes)
+	mqttToken := client.Publish("management", 0, false, jsonmes)
 	mqttToken.Wait()
 
 	//start broadcasting in a loop

@@ -108,7 +108,8 @@ func main() {
 
 	// set up the mqtt client
 	opts := MQTT.NewClientOptions()
-	opts.AddBroker("192.168.0.24:1883")
+	//opts.AddBroker("192.168.0.24:1883")
+	opts.AddBroker("test.mosquitto.org:1883")
 
 	client := MQTT.NewClient(opts)
 

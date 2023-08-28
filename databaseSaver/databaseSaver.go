@@ -1,10 +1,16 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
+	"strconv"
 	"time"
+
+	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
+	"github.com/influxdata/influxdb-client-go/v2/api/write"
 
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 )
@@ -23,10 +29,19 @@ type ManagementMessage struct {
 	SensorChannel string    `json: "sensorChannel"`
 }
 
+// influx data
+var token = "D5pA_hs2oPhmCip_EpynBa1GcThw_M29ivprrznLsTM4tE0nPyAnTlb7Zy2ZSSH84nQqVv6YhClxwDzqd8PDzQ=="
+var url = "http://localhost:8086"
+var client_in = influxdb2.NewClient(url, token)
+var org = "metropolia"
+var bucket = "testbucket"
+var writeAPI = client_in.WriteAPIBlocking(org, bucket)
+
 func main() {
 	// Set up the MQTT client options
 	opts := MQTT.NewClientOptions()
-	opts.AddBroker("192.168.0.24:1883")
+	//opts.AddBroker("192.168.0.24:1883")
+	opts.AddBroker("test.mosquitto.org:1883")
 
 	// Create a new client
 	client := MQTT.NewClient(opts)
@@ -34,9 +49,6 @@ func main() {
 		fmt.Println(token.Error())
 		os.Exit(1)
 	}
-
-	// Channel for receiving messages
-	//messageChannel := make(chan string)
 
 	// Start goroutine to handle messages from the channel
 	go func() {
@@ -53,11 +65,6 @@ func main() {
 
 	// Subscribe to initial topic
 	subscribeToTopic(client, "management")
-
-	/* Simulate receiving messages
-	messageChannel <- "new-topic-1"
-	messageChannel <- "trusted"
-	messageChannel <- "new-topic-2"*/
 
 	// Wait for new messages to arrive
 	select {}
@@ -81,17 +88,38 @@ func messageHandler(client MQTT.Client, msg MQTT.Message) {
 	fmt.Printf("Received message on topic: %s\n", msg.Topic())
 	fmt.Printf("Message payload: %s\n", msg.Payload())
 
-	err := json.Unmarshal(msg.Payload(), &mes)
-	if err != nil {
-		fmt.Println(err)
-	}
-	if mes.Event == "save" {
-		messageChannel <- mes.SensorChannel
+	topic := string(msg.Topic())
 
-	}
+	if topic == "management" {
+		err := json.Unmarshal(msg.Payload(), &mes)
+		if err != nil {
+			fmt.Println(err)
+		}
+		if mes.Event == "save-data" {
+			messageChannel <- mes.SensorChannel
 
-	if msg.Topic != "management" {
-		//TODO: save to database
+		}
+	} else {
+
+		//save to database
+		value := string(msg.Payload())
+		fmt.Println("value: " + value)
+		var valueInt, err2 = strconv.Atoi(value)
+		if err2 != nil {
+			fmt.Println(err2)
+		}
+		tags := map[string]string{
+			"channel": topic,
+		}
+		fields := map[string]interface{}{
+			"field1": valueInt,
+		}
+		point := write.NewPoint(topic, tags, fields, time.Now())
+		//time.Sleep(1 * time.Second) // separate points by 1 second
+
+		if err := writeAPI.WritePoint(context.Background(), point); err != nil {
+			log.Fatal(err)
+		}
 	}
 
 }

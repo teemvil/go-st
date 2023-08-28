@@ -24,7 +24,8 @@ func main() {
 
 	//MQTT client info
 	opts := MQTT.NewClientOptions()
-	opts.AddBroker("192.168.0.24:1883")
+	//opts.AddBroker("192.168.0.24:1883")
+	opts.AddBroker("test.mosquitto.org:1883")
 
 	var mes ManagementMessage
 
@@ -54,9 +55,9 @@ func main() {
 			fmt.Println(itemid)
 
 			//TODO: get public key from somewhere
-			secret := []byte("-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA88rw9mMriuKHvJ/OE2Bu\noMgrTQ7YyvZi8BOVD2k9cVWaCmYZ/I2nSveMUJuBFyWLMeHgvd97DOpbcxmMtQIj\nDzwjQyueKHuupw4fqXhZ5e2ZDg9ul4aw+yqjBFibZKn5WdD1+zdQpyicWPHe86Z8\n0B0/xs5apHuHtc6IYaHiT/CDs4RkJ2Y3iZPrdnKWGXjHIGUpTYquBQvAQmr8VUvZ\nnZUPAXTAflnziA+31tHUlKICcJXsU6DjacJohI/DbDMKX0zA1UxJwLzD2iXkbZlu\n81cjWBWbZFjZuaT1xEpcj4+gszE8s5iTqh/3jZOCiLFWJzv0V8ikIiP37ASennPB\nawIDAQAB\n-----END PUBLIC KEY-----\n")
+			secret := "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA88rw9mMriuKHvJ/OE2Bu\noMgrTQ7YyvZi8BOVD2k9cVWaCmYZ/I2nSveMUJuBFyWLMeHgvd97DOpbcxmMtQIj\nDzwjQyueKHuupw4fqXhZ5e2ZDg9ul4aw+yqjBFibZKn5WdD1+zdQpyicWPHe86Z8\n0B0/xs5apHuHtc6IYaHiT/CDs4RkJ2Y3iZPrdnKWGXjHIGUpTYquBQvAQmr8VUvZ\nnZUPAXTAflnziA+31tHUlKICcJXsU6DjacJohI/DbDMKX0zA1UxJwLzD2iXkbZlu\n81cjWBWbZFjZuaT1xEpcj4+gszE8s5iTqh/3jZOCiLFWJzv0V8ikIiP37ASennPB\nawIDAQAB\n-----END PUBLIC KEY-----\n"
 
-			validationMes = ManagementMessage{mes.Name, "null", string(secret) + mes.Name, "attest-ok", time.Now(), "null", "null", "null"}
+			validationMes = ManagementMessage{mes.Name, "null", secret, "attest-ok", time.Now(), mes.Jwt, "null", "null"}
 			jsonmes, err := json.Marshal(validationMes)
 			if err != nil {
 				fmt.Println(err)
@@ -73,7 +74,7 @@ func main() {
 	}
 
 	for {
-		time.Sleep(time.Second) //why is this loop here?
+		time.Sleep(time.Second)
 	}
 
 }
