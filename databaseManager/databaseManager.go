@@ -10,14 +10,16 @@ import (
 )
 
 type ManagementMessage struct {
-	Name          string    `json: "name"`
-	Itemid        string    `json: "itemid"`
-	Messsage      string    `json: "message"`
-	Event         string    `json: "event"`
-	Time          time.Time `json: "time"`
-	Jwt           string    `json: "jwt"`
-	HostDevice    string    `json: "hostDevice"`
-	SensorChannel string    `json: "sensorChannel"`
+	DeviceName       string    `json: "name"`
+	Itemid           string    `json: "itemid"`
+	Message          string    `json: "message"`
+	Event            string    `json: "event"`
+	Time             time.Time `json: "time"`
+	Jwt              string    `json: "jwt"`
+	SensorName       string    `json: "sensorName"`
+	SensorHostDevice string    `json: "sensorHostDevice"`
+	SensorChannel    string    `json: "sensorChannel"`
+	Misc             string    `json: "misc"`
 }
 
 func main() {
@@ -34,7 +36,7 @@ func main() {
 
 	//list of active sensors
 	type Sensor struct {
-		name, hostdevice, channel string
+		Name, Hostdevice, Channel string
 	}
 	var sensors []Sensor
 
@@ -56,16 +58,16 @@ func main() {
 
 		//add new sensors to the list
 		if string(mes.Event) == "sensor-startup" {
-			var sensor = Sensor{mes.Name, mes.HostDevice, mes.SensorChannel}
+			var sensor = Sensor{mes.SensorName, mes.SensorHostDevice, mes.SensorChannel}
 			sensors = append(sensors, sensor)
-			fmt.Println("sensor " + mes.Name + " added to the list")
+			fmt.Println("sensor " + mes.SensorName + " added to the list")
 			//Check if hostdevice is deemed safe
 			n := 0
 			for n < len(devices) {
 				fmt.Println(devices[n])
-				if mes.HostDevice == devices[n] {
+				if mes.SensorHostDevice == devices[n] {
 					//send message to databaseSaver.go to start saving
-					var savemessage = ManagementMessage{mes.Name, "null", "Start saving from channel " + mes.SensorChannel, "save", time.Now(), "null", mes.HostDevice, mes.SensorChannel}
+					var savemessage = ManagementMessage{mes.DeviceName, "", "Start saving from channel " + mes.SensorChannel, "save", time.Now(), "", mes.SensorName, mes.SensorHostDevice, mes.SensorChannel, ""}
 					jsonmes, err := json.Marshal(savemessage)
 					if err != nil {
 						fmt.Println(err)
@@ -73,7 +75,7 @@ func main() {
 					sToken := client.Publish("management", 0, false, jsonmes)
 					sToken.Wait()
 
-					n = len(devices) - 1 //kludge for ending the loop
+					//n = len(devices) - 1 //kludge for ending the loop
 				}
 				n = n + 1
 			}
@@ -81,15 +83,15 @@ func main() {
 
 		//add new validated device to the list
 		if string(mes.Event) == "validation-ok" {
-			devices = append(devices, mes.Name)
-			fmt.Println("device " + mes.Name + " added to the list")
+			devices = append(devices, mes.DeviceName)
+			fmt.Println("device " + mes.DeviceName + " added to the list")
 			//check if there are sensors on the device
 			n := 0
 			for n < len(sensors) {
 				fmt.Println(sensors[n])
-				if mes.Name == sensors[n].hostdevice {
+				if mes.DeviceName == sensors[n].Hostdevice {
 					// send message to databaseSaver.go to start saving
-					var savemessage = ManagementMessage{sensors[n].name, "null", "Start saving from channel " + sensors[n].channel, "save-data", time.Now(), "null", sensors[n].hostdevice, sensors[n].channel}
+					var savemessage = ManagementMessage{sensors[n].Hostdevice, "", "Start saving from channel " + sensors[n].Channel, "save", time.Now(), "", sensors[n].Name, sensors[n].Hostdevice, sensors[n].Channel, ""}
 					jsonmes, err := json.Marshal(savemessage)
 					if err != nil {
 						fmt.Println(err)

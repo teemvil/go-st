@@ -1,23 +1,29 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"time"
+
+	_ "github.com/go-sql-driver/mysql"
 
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 )
 
 type ManagementMessage struct {
-	Name          string    `json: "name"`
-	Itemid        string    `json: "itemid"`
-	Messsage      string    `json: "message"`
-	Event         string    `json: "event"`
-	Time          time.Time `json: "time"`
-	Jwt           string    `json: "jwt"`
-	HostDevice    string    `json: "hostDevice"`
-	SensorChannel string    `json: "sensorChannel"`
+	DeviceName       string    `json: "name"`
+	Itemid           string    `json: "itemid"`
+	Message          string    `json: "message"`
+	Event            string    `json: "event"`
+	Time             time.Time `json: "time"`
+	Jwt              string    `json: "jwt"`
+	SensorName       string    `json: "sensorName"`
+	SensorHostDevice string    `json: "sensorHostDevice"`
+	SensorChannel    string    `json: "sensorChannel"`
+	Misc             string    `json: "misc"`
 }
 
 func main() {
@@ -26,6 +32,15 @@ func main() {
 	opts := MQTT.NewClientOptions()
 	//opts.AddBroker("192.168.0.24:1883")
 	opts.AddBroker("test.mosquitto.org:1883")
+
+	//open database connection
+	db, err := sql.Open("mysql", "user:password@/attestation")
+	if err != nil {
+		log.Fatal(err)
+	}
+	db.SetConnMaxLifetime(0)
+	db.SetMaxIdleConns(50)
+	db.SetMaxOpenConns(50)
 
 	var mes ManagementMessage
 
@@ -49,23 +64,41 @@ func main() {
 
 		//attestation
 		itemid := mes.Itemid
-		//TODO: attestation using itemid, to get secret from attestation database
+		//attestation using itemid, to get secret from attestation database
 		if mes.Event == "attestation-start" {
-			//secret = attest(itemid)
 			fmt.Println(itemid)
 
-			//TODO: get public key from somewhere
-			//secret := getElement(itemid).akkey
-			secret := "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA88rw9mMriuKHvJ/OE2Bu\noMgrTQ7YyvZi8BOVD2k9cVWaCmYZ/I2nSveMUJuBFyWLMeHgvd97DOpbcxmMtQIj\nDzwjQyueKHuupw4fqXhZ5e2ZDg9ul4aw+yqjBFibZKn5WdD1+zdQpyicWPHe86Z8\n0B0/xs5apHuHtc6IYaHiT/CDs4RkJ2Y3iZPrdnKWGXjHIGUpTYquBQvAQmr8VUvZ\nnZUPAXTAflnziA+31tHUlKICcJXsU6DjacJohI/DbDMKX0zA1UxJwLzD2iXkbZlu\n81cjWBWbZFjZuaT1xEpcj4+gszE8s5iTqh/3jZOCiLFWJzv0V8ikIiP37ASennPB\nawIDAQAB\n-----END PUBLIC KEY-----\n"
-
-			validationMes = ManagementMessage{mes.Name, "null", secret, "attest-ok", time.Now(), mes.Jwt, "null", "null"}
-			jsonmes, err := json.Marshal(validationMes)
+			//get public key from database
+			smtOut, err := db.Prepare("SELECT pubkey FROM devices WHERE itemid = ?")
 			if err != nil {
 				fmt.Println(err)
 			}
+			defer smtOut.Close()
 
-			mqttValidToken := client.Publish("management", 0, false, jsonmes)
-			mqttValidToken.Wait()
+			var res string
+			err2 := smtOut.QueryRow(itemid).Scan(&res)
+			//if unsucceful, send out attest fail message, else send attest success message
+			if err2 != nil {
+				fmt.Println("Error getting pubkey from database", err2)
+				validationMes = ManagementMessage{mes.DeviceName, mes.Itemid, "Attestation failed for " + mes.DeviceName, "attest-fail", time.Now(), mes.Jwt, "", "", "", ""}
+				jsonmes, err := json.Marshal(validationMes)
+				if err != nil {
+					fmt.Println(err)
+				}
+
+				mqttValidToken := client.Publish("management", 0, false, jsonmes)
+				mqttValidToken.Wait()
+			} else {
+				fmt.Println(res)
+				validationMes = ManagementMessage{mes.DeviceName, mes.Itemid, "Attestation ok for " + mes.DeviceName, "attest-ok", time.Now(), mes.Jwt, "", "", "", res}
+				jsonmes, err := json.Marshal(validationMes)
+				if err != nil {
+					fmt.Println(err)
+				}
+
+				mqttValidToken := client.Publish("management", 0, false, jsonmes)
+				mqttValidToken.Wait()
+			}
 
 		}
 

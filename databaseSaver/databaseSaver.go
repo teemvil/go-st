@@ -19,14 +19,16 @@ import (
 var messageChannel = make(chan string)
 
 type ManagementMessage struct {
-	Name          string    `json: "name"`
-	Itemid        string    `json: "itemid"`
-	Messsage      string    `json: "message"`
-	Event         string    `json: "event"`
-	Time          time.Time `json: "time"`
-	Jwt           string    `json: "jwt"`
-	HostDevice    string    `json: "hostDevice"`
-	SensorChannel string    `json: "sensorChannel"`
+	DeviceName       string    `json: "name"`
+	Itemid           string    `json: "itemid"`
+	Message          string    `json: "message"`
+	Event            string    `json: "event"`
+	Time             time.Time `json: "time"`
+	Jwt              string    `json: "jwt"`
+	SensorName       string    `json: "sensorName"`
+	SensorHostDevice string    `json: "sensorHostDevice"`
+	SensorChannel    string    `json: "sensorChannel"`
+	Misc             string    `json: "misc"`
 }
 
 // influx data
@@ -95,7 +97,7 @@ func messageHandler(client MQTT.Client, msg MQTT.Message) {
 		if err != nil {
 			fmt.Println(err)
 		}
-		if mes.Event == "save-data" {
+		if mes.Event == "save" {
 			messageChannel <- mes.SensorChannel
 
 		}

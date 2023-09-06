@@ -66,14 +66,16 @@ func getPubKey(handleaddr int) ([]byte, error) {
 }
 
 type ManagementMessage struct {
-	Name          string    `json: "name"`
-	Itemid        string    `json: "itemid"`
-	Messsage      string    `json: "message"`
-	Event         string    `json: "event"`
-	Time          time.Time `json: "time"`
-	Jwt           string    `json: "jwt"`
-	HostDevice    string    `json: "hostDevice"`
-	SensorChannel string    `json: "sensorChannel"`
+	DeviceName       string    `json: "name"`
+	Itemid           string    `json: "itemid"`
+	Message          string    `json: "message"`
+	Event            string    `json: "event"`
+	Time             time.Time `json: "time"`
+	Jwt              string    `json: "jwt"`
+	SensorName       string    `json: "sensorName"`
+	SensorHostDevice string    `json: "sensorHostDevice"`
+	SensorChannel    string    `json: "sensorChannel"`
+	Misc             string    `json: "misc"`
 }
 
 type DeviceFile struct {
@@ -133,7 +135,7 @@ func main() {
 		fmt.Println(err2)
 	}
 
-	var mes = ManagementMessage{info.Name, info.Itemid, "Hello, pi014 here", "device-startup", time.Now(), signedToken, "null", "null"}
+	var mes = ManagementMessage{info.Name, info.Itemid, "Hello, " + info.Name + " is online", "device-startup", time.Now(), signedToken, "", "", "", ""}
 	jsonmes, err := json.Marshal(mes)
 
 	mqttToken := client.Publish("management", 0, false, jsonmes)

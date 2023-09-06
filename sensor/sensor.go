@@ -12,14 +12,16 @@ import (
 )
 
 type ManagementMessage struct {
-	Name          string    `json: "name"`
-	Itemid        string    `json: "itemid"`
-	Messsage      string    `json: "message"`
-	Event         string    `json: "event"`
-	Time          time.Time `json: "time"`
-	Jwt           string    `json: "jwt"`
-	HostDevice    string    `json: "hostDevice"`
-	SensorChannel string    `json: "sensorChannel"`
+	DeviceName       string    `json: "name"`
+	Itemid           string    `json: "itemid"`
+	Message          string    `json: "message"`
+	Event            string    `json: "event"`
+	Time             time.Time `json: "time"`
+	Jwt              string    `json: "jwt"`
+	SensorName       string    `json: "sensorName"`
+	SensorHostDevice string    `json: "sensorHostDevice"`
+	SensorChannel    string    `json: "sensorChannel"`
+	Misc             string    `json: "misc"`
 }
 
 type SensorFile struct {
@@ -56,7 +58,7 @@ func main() {
 		fmt.Println(err2)
 	}
 
-	var mes = ManagementMessage{info.Name, "null", "Hello, Temperature sensor here", "sensor-startup", time.Now(), "null", info.HostDevice, info.MQTTchannel}
+	var mes = ManagementMessage{info.HostDevice, "", "Hello, " + info.Name + " is online", "sensor-startup", time.Now(), "", info.Name, info.HostDevice, info.MQTTchannel, ""}
 	jsonmes, err := json.Marshal(mes)
 
 	mqttToken := client.Publish("management", 0, false, jsonmes)
