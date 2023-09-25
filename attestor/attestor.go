@@ -65,7 +65,7 @@ func main() {
 		//attestation
 		itemid := mes.Itemid
 		//attestation using itemid, to get secret from attestation database
-		if mes.Event == "attestation-start" {
+		if mes.Event == "attest" {
 			fmt.Println(itemid)
 
 			//get public key from database
